@@ -1,5 +1,5 @@
 {
-  "name": "vue-good-table",
+  "name": "@whtsky/vue-good-table",
   "version": "1.12.6",
   "description": "A simple, clean data table for VueJS (2.x) with essential features like sorting, column filtering, pagination etc",
   "main": "src/index.js",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xaksis/vue-good-table"
+    "url": "git+https://github.com/whtsky/vue-good-table"
   },
   "keywords": [
     "vue",
