@@ -1,5 +1,5 @@
 <template>
-  <div class="good-table">
+  <div class="good-table" :class="{'rtl': rtl}">
     <div :class="{'responsive': responsive}">
       <div v-if="title" class="table-header clearfix">
         <h2 class="table-title pull-left">{{title}}</h2>
@@ -25,7 +25,9 @@
               :class="columnHeaderClass(column, index)"
               :style="{width: column.width ? column.width : 'auto'}"
               v-if="!column.hidden">
-              <span>{{column.label}}</span>
+              <slot name="table-column" :column="column">
+                <span>{{column.label}}</span>
+              </slot>
             </th>
             <slot name="thead-tr"></slot>
           </tr>
@@ -59,13 +61,14 @@
               </td>
             </slot>
           </tr>
-          <tr v-if="columns.length === 0">
-            <slot name="emptystate">
-            </slot>
-          </tr>
-          <tr v-else-if="processedRows.length === 0">
-            <slot name="emptystate">
-            </slot>
+          <tr v-if="processedRows.length === 0">
+            <td :colspan="columns.length">
+              <slot name="emptystate">
+                <div class="center-align text-disabled">
+                  No data for table.
+                </div>
+              </slot>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -88,13 +91,13 @@
       </div>
       <div class="pagination-controls pull-right">
         <a href="javascript:undefined" class="page-btn" @click.prevent.stop="previousPage" tabindex="0">
-          <span class="chevron left"></span>
+          <span class="chevron" v-bind:class="{ 'left': !rtl, 'right': rtl }"></span>
           <span>{{prevText}}</span>
         </a>
         <div class="info">{{paginatedInfo}}</div>
         <a href="javascript:undefined" class="page-btn" @click.prevent.stop="nextPage" tabindex="0">
-          <span>{{nextText}}</span>
-          <span class="chevron right"></span>
+          <span >{{nextText}}</span>
+          <span class="chevron" v-bind:class="{ 'right': !rtl, 'left': rtl }"></span>
         </a>
       </div>
     </div>
@@ -117,6 +120,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       lineNumbers: {default: false},
       defaultSortBy: {default: null},
       responsive: {default: true},
+      rtl: {default: false},
 
       // search
       globalSearch: {default: false},
@@ -251,9 +255,9 @@ import {format, parse, compareAsc} from 'date-fns/esm'
 
       formattedRow(row) {
         var formattedRow = {};
-        for(const col of this.columns) {
-          for(const key in row) {
-            formattedRow[key] = this.collectFormatted(row, col);
+        for (const col of this.columns) {
+          if (col.field) {
+            formattedRow[col.field] = this.collectFormatted(row, col);
           }
         }
         return formattedRow;
@@ -286,6 +290,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
           case 'percentage':
           case 'decimal':
           case 'date':
+          case 'text':
             classString += 'right-align ';
           break;
           default:
@@ -569,6 +574,10 @@ import {format, parse, compareAsc} from 'date-fns/esm'
   text-align: left;
 }
 
+.center-align{
+  text-align: center;
+}
+
 .pull-left{
   float:  left !important;
 }
@@ -610,6 +619,10 @@ import {format, parse, compareAsc} from 'date-fns/esm'
     border-top: 1px solid #ddd;
   }
 
+  .rtl .table td, .rtl .table th:not(.line-numbers) {
+    padding: .75rem .75rem .75rem 1.5rem;
+  }
+
   .table.condensed td, .table.condensed th {
     padding: .4rem .4rem .4rem .4rem;
   }
@@ -619,6 +632,10 @@ import {format, parse, compareAsc} from 'date-fns/esm'
     border-bottom:  2px solid #ddd;
     padding-right: 1.5rem;
     background-color: rgba(35,41,53,0.03);
+  }
+  .rtl .table thead th, .rtl .table.condensed thead th {
+    padding-left:  1.5rem;
+    padding-right:  .75rem;
   }
 
   tr.clickable {
@@ -663,6 +680,12 @@ import {format, parse, compareAsc} from 'date-fns/esm'
     border-bottom: 6px solid rgba(0, 0, 0, 0.66);
     margin-top:  6px;
     margin-left:  5px;
+  }
+
+  .rtl table th.sorting:after,
+  .rtl table th.sorting-asc:after{
+    margin-right:  5px;
+    margin-left:  0px;
   }
 
   table th.sorting:hover:after{
@@ -835,6 +858,14 @@ import {format, parse, compareAsc} from 'date-fns/esm'
     word-wrap: break-word;
     width: 45px;
     text-align: center;
+  }
+
+  .good-table.rtl{
+    direction: rtl;
+  }
+
+  .text-disabled{
+    color:  #aaa;
   }
 
 </style>
